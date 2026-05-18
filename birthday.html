@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bhavana's Universe 🌌</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,200;0,300;0,400;1,200;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#f0d080;--rose:#e88fa0;--blue:#80b8f0;--purple:#c090f0;--green:#90f0b0;
+  --white:#f8f4ff;--space:#020814;
+  --fs:'Crimson Pro',serif;--fm:'Space Mono',monospace;
+}
+
+/* Base layer locked perfectly in place */
+html,body{width:100%;height:100%;overflow:hidden;background:var(--space);color:var(--white)}
+canvas{position:fixed;inset:0;z-index:0;cursor:crosshair}
+
+/* ── INTRO ── */
+#intro{position:fixed;inset:0;z-index:900;background:var(--space);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:opacity 1.5s}
+#intro.gone{opacity:0;pointer-events:none}
+.i-name{font-family:var(--fs);font-size:clamp(4rem,13vw,9rem);font-weight:200;letter-spacing:.04em;animation:sB 2s ease forwards}
+.i-name em{color:var(--gold);font-style:italic}
+.i-sub{font-family:var(--fs);font-size:clamp(.9rem,2.5vw,1.3rem);font-style:italic;color:var(--rose);margin-top:1rem;opacity:0;animation:fI 2s 1.5s forwards}
+.i-from{font-family:var(--fm);font-size:.58rem;letter-spacing:.4em;color:var(--blue);text-transform:uppercase;opacity:0;animation:fI 2s 2.5s forwards;margin-top:.6rem}
+.i-btn{margin-top:2.5rem;background:none;border:1px solid rgba(240,208,128,.4);border-radius:50px;padding:.75rem 2.5rem;font-family:var(--fs);font-size:1rem;font-style:italic;color:var(--gold);cursor:pointer;opacity:0;animation:fI 2s 3.5s forwards;transition:all .4s;letter-spacing:.08em}
+.i-btn:hover{background:rgba(240,208,128,.1);border-color:var(--gold);box-shadow:0 0 30px rgba(240,208,128,.15)}
+@keyframes sB{from{opacity:0;filter:blur(20px);letter-spacing:.3em}to{opacity:1;filter:blur(0);letter-spacing:.04em}}
+@keyframes fI{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HUD ── */
+#hud{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;transition:opacity 1s}
+#hud.show{opacity:1}
+.htl{position:absolute;top:1.5rem;left:1.5rem}
+.htl h1{font-family:var(--fs);font-size:1rem;font-weight:200;letter-spacing:.3em;color:var(--gold);text-transform:uppercase}
+.htl p{font-family:var(--fm);font-size:.46rem;letter-spacing:.4em;color:var(--blue);opacity:.5;margin-top:.2rem;text-transform:uppercase}
+.htr{position:absolute;top:1.5rem;right:1.5rem;display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;pointer-events:all}
+.pill{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:50px;padding:.3rem .85rem;font-family:var(--fm);font-size:.52rem;letter-spacing:.07em;color:var(--white);cursor:pointer;transition:all .3s;white-space:nowrap}
+.pill:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.28)}
+.hbl{position:absolute;bottom:1.5rem;left:1.5rem;display:flex;flex-direction:column;gap:.35rem;pointer-events:none}
+.leg{display:flex;align-items:center;gap:.5rem;font-family:var(--fm);font-size:.44rem;letter-spacing:.07em;text-transform:uppercase;opacity:.38}
+.ldot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.hbr{position:absolute;bottom:1.5rem;right:1.5rem;text-align:right;pointer-events:none}
+.dnum{font-family:var(--fs);font-size:2.5rem;font-weight:200;color:var(--gold);line-height:1}
+.dlbl{font-family:var(--fm);font-size:.42rem;letter-spacing:.2em;text-transform:uppercase;opacity:.3}
+.hint{position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);font-family:var(--fm);font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;opacity:.28;white-space:nowrap;animation:br 3s ease-in-out infinite;pointer-events:none;transition:opacity 1s}
+@keyframes br{0%,100%{opacity:.28}50%{opacity:.5}}
+
+/* ── TOOLTIP OVERLAY (THE SCROLL FIX) ── */
+/* This invisible layer handles the webpage scrolling natively */
+#tt-wrapper { position:fixed; inset:0; z-index:400; overflow-y:auto; overflow-x:hidden; pointer-events:none; opacity:0; transition:opacity .38s; }
+#tt-wrapper.show { pointer-events:all; opacity:1; }
+
+#tt{position:absolute;background:rgba(2,8,20,.96);border:1px solid rgba(255,255,255,.11);border-radius:20px;padding:0;max-width:320px;width:90%;transform:translateY(10px) scale(.97);transition:transform .38s;backdrop-filter:blur(24px);overflow:hidden; margin-bottom: 4rem; /* Gives breathing room when fully scrolled down */}
+#tt-wrapper.show #tt { transform:none; }
+
+.tt-img{width:100%;height:160px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.4rem;border-bottom:1px solid rgba(255,255,255,.07);position:relative;overflow:hidden}
+.tt-img img{width:100%;height:100%;object-fit:cover;display:none}
+.tt-img img.loaded{display:block}
+.tt-img-ph{display:flex;flex-direction:column;align-items:center;gap:.5rem}
+.tt-img-ph span{font-size:2rem;opacity:.35}
+.tt-img-ph p{font-family:var(--fm);font-size:.42rem;letter-spacing:.18em;text-transform:uppercase;opacity:.28;color:var(--white)}
+.tt-body{padding:1.3rem 1.5rem}
+#ttx{position:absolute;top:.7rem;right:.9rem;background:none;border:none;color:rgba(255,255,255,.3);font-family:var(--fm);font-size:.8rem;cursor:pointer;z-index:10}
+#ttx:hover{color:var(--white)}
+#ttc{font-family:var(--fm);font-size:.44rem;letter-spacing:.28em;text-transform:uppercase;margin-bottom:.4rem}
+#tte{font-size:1.6rem;display:block;margin-bottom:.3rem}
+#ttt{font-family:var(--fs);font-size:1.42rem;font-weight:300;margin-bottom:.45rem;line-height:1.1}
+#ttb{font-family:var(--fs);font-size:.87rem;line-height:1.78;opacity:.82}
+
+/* ── CONSTELLATION NAME LABELS ── */
+.cname{position:fixed;font-family:var(--fm);font-size:.46rem;letter-spacing:.25em;text-transform:uppercase;opacity:0;pointer-events:none;transition:opacity 1s;z-index:150;white-space:nowrap}
+.cname.show{opacity:.45}
+
+/* ── MORSE ── */
+#morse{position:fixed;top:0;left:0;right:0;z-index:350;padding:.85rem;text-align:center;pointer-events:none;opacity:0;transition:opacity .5s;background:linear-gradient(to bottom,rgba(2,8,20,.7),transparent)}
+#morse.show{opacity:1}
+#md{font-family:var(--fm);font-size:clamp(.7rem,1.7vw,.95rem);letter-spacing:.3em;color:var(--gold);text-shadow:0 0 18px rgba(240,208,128,.5)}
+#mk{font-family:var(--fs);font-size:clamp(.65rem,1.3vw,.85rem);font-style:italic;color:var(--rose);margin-top:.2rem;opacity:.8}
+
+/* ── FLOATING LETTER ── */
+#lf{position:fixed;z-index:300;font-size:2rem;cursor:pointer;animation:ld linear infinite;filter:drop-shadow(0 0 8px rgba(240,208,128,.6));display:none;user-select:none}
+@keyframes ld{0%{transform:translate(0,0) rotate(-5deg)}25%{transform:translate(18px,-14px) rotate(3deg)}50%{transform:translate(-8px,9px) rotate(-3deg)}75%{transform:translate(13px,4px) rotate(5deg)}100%{transform:translate(0,0) rotate(-5deg)}}
+
+/* ── LETTER PANEL ── */
+.panel{position:fixed;inset:0;z-index:600;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:rgba(2,8,20,.96);backdrop-filter:blur(16px);opacity:0;pointer-events:none;transition:opacity .5s;overflow-y:auto;padding:2rem 0;}
+.panel.show{opacity:1;pointer-events:all}
+.pbox{background:rgba(4,13,30,.92);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:2.3rem 1.5rem;max-width:490px;width:90%;position:relative;margin:auto;}
+.px{position:absolute;top:.9rem;right:1.1rem;background:none;border:none;color:rgba(255,255,255,.3);font-family:var(--fm);font-size:.85rem;cursor:pointer}
+.px:hover{color:var(--white)}
+.ptag{font-family:var(--fm);font-size:.48rem;letter-spacing:.3em;text-transform:uppercase;margin-bottom:.7rem}
+.ptit{font-family:var(--fs);font-size:2.1rem;font-weight:200;line-height:1.1;margin-bottom:.9rem}
+.pbody{font-family:var(--fs);font-size:.97rem;line-height:1.85;font-weight:300;opacity:.84}
+
+/* ── BIRTHDAY PANEL ── */
+#bp{position:fixed;inset:0;z-index:800;background:rgba(2,8,20,.97);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;opacity:0;pointer-events:none;transition:opacity .6s;backdrop-filter:blur(12px);overflow-y:auto;padding:2rem 0;}
+#bp.show{opacity:1;pointer-events:all}
+.binn{max-width:540px;width:90%;text-align:center;margin:auto;}
+.bdec{font-size:1.1rem;letter-spacing:.45em;margin-bottom:2rem;opacity:.4}
+.bbig{font-family:var(--fs);font-size:clamp(2.5rem,8vw,5.5rem);font-weight:200;line-height:.9;color:var(--gold)}
+.bbig em{color:var(--rose);font-style:italic}
+.bmsg{font-family:var(--fs);font-size:1.05rem;font-weight:200;font-style:italic;color:var(--white);opacity:.8;line-height:1.9;margin:2rem 0}
+.bsig{font-family:var(--fm);font-size:.56rem;letter-spacing:.3em;color:var(--blue);text-transform:uppercase;opacity:.5}
+.bcl{margin-top:2rem;background:none;border:1px solid rgba(240,208,128,.3);border-radius:50px;padding:.55rem 1.8rem;color:var(--gold);font-family:var(--fs);font-style:italic;cursor:pointer;font-size:.88rem;transition:all .3s;margin-bottom:2rem;}
+.bcl:hover{background:rgba(240,208,128,.08)}
+
+/* ── PARTICLES ── */
+.pt{position:fixed;pointer-events:none;z-index:500;border-radius:50%;animation:pf linear forwards}
+@keyframes pf{0%{opacity:1;transform:translateY(0) scale(1) rotate(0deg)}100%{opacity:0;transform:translateY(-90px) scale(0) rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<canvas id="sky"></canvas>
+<audio id="audio" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg"></audio>
+
+<div id="intro">
+  <div class="i-name">Bha<em>vana</em></div>
+  <div class="i-sub">The universe named a constellation after you.</div>
+  <div class="i-from">from Ushnish, with every star he could find</div>
+  <button class="i-btn" onclick="enterUniverse()">Enter Your Universe</button>
+</div>
+
+<div id="hud">
+  <div class="htl">
+    <h1>Bhavana's Universe</h1>
+    <p>Her Birthday 2026</p>
+  </div>
+  <div class="htr">
+    <button class="pill" onclick="toggleMusic()" id="mb">♪ Play Music</button>
+  </div>
+  <div class="hbl">
+    <div class="leg"><div class="ldot" style="background:var(--gold);box-shadow:0 0 5px var(--gold)"></div>Memoria — Your Memories</div>
+    <div class="leg"><div class="ldot" style="background:var(--rose);box-shadow:0 0 5px var(--rose)"></div>Amor — Things I Love</div>
+    <div class="leg"><div class="ldot" style="background:var(--blue);box-shadow:0 0 5px var(--blue)"></div>Futura — Our Future</div>
+    <div class="leg"><div class="ldot" style="background:var(--purple);box-shadow:0 0 5px var(--purple)"></div>Anima — Who You Are</div>
+    <div class="leg"><div class="ldot" style="background:var(--green);box-shadow:0 0 5px var(--green)"></div>The Birthday Star</div>
+  </div>
+  <div class="hbr">
+    <div class="dnum" id="dn">0</div>
+    <div class="dlbl">stars discovered</div>
+  </div>
+  <div class="hint" id="hint">click the glowing stars to discover your memories</div>
+</div>
+
+<div id="tt-wrapper">
+  <div id="tt">
+    <div class="tt-img" id="tt-img-wrap">
+      <img id="tt-img" src="" alt="memory photo">
+      <div class="tt-img-ph" id="tt-ph">
+        <span id="tt-ph-emoji">📸</span>
+        <p>Add a photo here</p>
+      </div>
+    </div>
+    <div class="tt-body">
+      <button id="ttx" onclick="cTT()">✕</button>
+      <div id="ttc"></div>
+      <span id="tte"></span>
+      <div id="ttt"></div>
+      <div id="ttb"></div>
+    </div>
+  </div>
+</div>
+
+<div class="cname" id="cn1" style="color:var(--gold)">Constellation Memoria</div>
+<div class="cname" id="cn2" style="color:var(--rose)">Constellation Amor</div>
+<div class="cname" id="cn3" style="color:var(--blue)">Constellation Futura</div>
+<div class="cname" id="cn4" style="color:var(--purple)">Constellation Anima</div>
+
+<div id="morse"><div id="md"></div><div id="mk"></div></div>
+
+<div id="lf" title="Catch me!">💌</div>
+
+<div class="panel" id="lp">
+  <div class="pbox" style="border-color:rgba(240,208,128,.18)">
+    <button class="px" onclick="cP('lp')">✕</button>
+    <div class="ptag" id="lptag" style="color:var(--gold)">A Letter, Caught</div>
+    <div class="ptit" id="lptit" style="color:var(--gold)">My dearest<br><em>Bhavana,</em></div>
+    <div class="pbody" id="lpbody">Its now been 2 birthdays with you sweetie and I cant wait to spend them all with you. Be prepapred for many more gifts and trips and memories and adventure with me.<br><br>I love you.<br><br>— Ushnish</div>
+  </div>
+</div>
+
+<div id="bp">
+  <div class="binn">
+    <div class="bdec">— — — — —</div>
+    <div class="bbig">Happy<br><em>Birthday,</em><br>Bhavana.</div>
+    <div class="bmsg">
+      You are the most extraordinary person I have ever known.<br>
+      Every star in this universe is here because of you.<br><br>
+      I hope this year brings you everything you deserve —<br>
+      which is honestly more than any universe can hold.<br><br>
+      <em>I love you. Today, tomorrow, and every star from here to forever.</em>
+    </div>
+    <div class="bsig">— Ushnish, your person</div>
+    <button class="bcl" onclick="cBday()">Back to your stars ✦</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// STAR DATA
+// ══════════════════════════════════════════════════════════════
+const STARS = [
+  // ── CONSTELLATION MEMORIA (GOLD) — Crown shape, top-left ──
+  {type:'gold',size:3.0,pulse:false,con:'Constellation I · Memoria',emoji:'✨',
+   title:'The Day We Met',
+   body:'Ahhh that rainy dayyy when I saw you. Unforgetteble. I knew I wantedd to be with you then and that feeling hasnt and will never change',
+   img:'image1.jpeg', ph:'📸', x:.10,y:.15},
+  {type:'gold',size:2.5,pulse:false,con:'Constellation I · Memoria',emoji:'🌙',
+   title:'Our First Real Conversation',
+   body:'Our first real convo in koshys and many laughs before that I will never ever forget babeeee.',
+   img:'image2.jpeg', ph:'💬', x:.17,y:.10},
+  {type:'gold',size:3.8,pulse:true, con:'Constellation I · Memoria',emoji:'🌅',
+   title:'My Favourite Day With You',
+   body:'I think one of my most favorite days with was one of them most recent ones at the airport. Ill never forget that sunset and Ill never forget how I felt that time with you.',
+   img:'image4.jpeg', ph:'🌅', x:.24,y:.07},
+  {type:'gold',size:2.5,pulse:false,con:'Constellation I · Memoria',emoji:'🎵',
+   title:'Our Song',
+   body:'I dont thinkkk we have a particular song but if I had tooo choose U will always be mine.',
+   img:'image7.jpeg', ph:'🎵', x:.31,y:.10},
+  {type:'gold',size:3.0,pulse:false,con:'Constellation I · Memoria',emoji:'🌊',
+   title:'A Trip We Took',
+   body:'I meannn the obviouss most amazinggg place we went togther was udupi. That amazing restaurent and beach and you always only you',
+   img:'image3.jpeg', ph:'✈️', x:.38,y:.15},
+  {type:'gold',size:2.4,pulse:false,con:'Constellation I · Memoria',emoji:'🍃',
+   title:'A Quiet Ordinary Moment',
+   body:'Our every nighttttt disocrd well almost everynight is sooooo ordinary yettt soo special cause its with you.',
+   img:'image5.jpeg', ph:'🌿', x:.14,y:.22},
+  {type:'gold',size:2.8,pulse:false,con:'Constellation I · Memoria',emoji:'🎂',
+   title:'Last Year With You',
+   body:'This last yearr with you was an adventure but which year wont be this fun when I am with you.',
+   img:'image6.jpeg', ph:'🎉', x:.34,y:.22},
+
+  // ── CONSTELLATION AMOR (ROSE) — Heart shape, top-right ──
+  {type:'rose',size:2.5,pulse:false,con:'Constellation II · Amor',emoji:'🌹',
+   title:'The Way You Laugh',
+   body:'Ur laugh is the best music I have ever heard and if I could save it and put it on loop I would.',
+   img:'image8.jpeg', ph:'😂', x:.58,y:.10},
+  {type:'rose',size:3.2,pulse:false,con:'Constellation II · Amor',emoji:'💕',
+   title:'How You Make Me Feel',
+   body:'U make me feel a lotta thing babyyyy but if I had to say u make me feel wanted and comforted',
+   img:'image9.jpeg', ph:'💕', x:.66,y:.07},
+  {type:'rose',size:4.0,pulse:true, con:'Constellation II · Amor',emoji:'💖',
+   title:'Why I Love You',
+   body:'Everything about U makes me fall in lovee with you Ur smile , Ur kindness , Ur bravery all of it.',
+   img:'image10.jpeg', ph:'🌹', x:.74,y:.10},
+  {type:'rose',size:3.2,pulse:false,con:'Constellation II · Amor',emoji:'🌸',
+   title:'Tiny Things Only You Do',
+   body:'Ur little puffs of cute anger ur determination to never given all of it is so enchanting',
+   img:'image11.jpeg', ph:'🌸', x:.82,y:.07},
+  {type:'rose',size:2.5,pulse:false,con:'Constellation II · Amor',emoji:'🎀',
+   title:'What Makes You Irreplaceable',
+   body:'I thinkkk what makes U the most irreplaceble is howw U choose to be so so good despite everything. It makes feel inspired everything that U do.',
+   img:'image12.jpeg', ph:'✨', x:.88,y:.14},
+  {type:'rose',size:2.8,pulse:false,con:'Constellation II · Amor',emoji:'🌺',
+   title:'How You Changed Me',
+   body:'U changed me in ways U couldnt imagine , U made me a better , kinder , calmer person. I am the best version of myself when I am with you.',
+   img:'image13.jpeg', ph:'🦋', x:.84,y:.22},
+  {type:'rose',size:2.5,pulse:false,con:'Constellation II · Amor',emoji:'🦋',
+   title:'The Moment I Knew',
+   body:'Well there were many moments but I think what solidified our relationship the most is the day we met ur mum I knew if we could get thru that we could get thru anything.',
+   img:'image14.jpeg', ph:'💫', x:.62,y:.22},
+  {type:'rose',size:2.8,pulse:false,con:'Constellation II · Amor',emoji:'💌',
+   title:'Things I Never Say Enough',
+   body:'I deffo donttt say this enough but even one message , one note of appreciation from U make my day 100x better',
+   img:'image15.jpeg', ph:'💌', x:.72,y:.22},
+
+  // ── CONSTELLATION FUTURA (BLUE) — Arrow shape, bottom-left ──
+  {type:'blue',size:2.4,pulse:false,con:'Constellation III · Futura',emoji:'🚀',
+   title:'A Place I Will Take You',
+   body:'Ohh there is one very specific place I wanna take u and this is ofcc ladalk. The night skies are even more better that what I have made.',
+   img:'image16.jpeg', ph:'🗺️', x:.08,y:.55},
+  {type:'blue',size:2.8,pulse:false,con:'Constellation III · Futura',emoji:'🌍',
+   title:'My Wishes For You This Year',
+   body:'My 3 wishes for U this year is that I wish U to be healthy happy and hopefull babe, Dont worry U are gonna have an amazing year.',
+   img:'image17.jpeg', ph:'⭐', x:.14,y:.48},
+  {type:'blue',size:3.5,pulse:true, con:'Constellation III · Futura',emoji:'🌠',
+   title:'Our Future Together',
+   body:'Our future is gonna be a happy cozy beautiful home with lots of dogs.',
+   img:'image18.jpeg', ph:'🌠', x:.20,y:.42},
+  {type:'blue',size:2.8,pulse:false,con:'Constellation III · Futura',emoji:'💌',
+   title:'Promises I Make You Today',
+   body:'I promise to always show up when U need me , always comfort U when I have to and always listen to you when I need to.',
+   img:'image19.jpeg', ph:'🤞', x:.26,y:.48},
+  {type:'blue',size:2.4,pulse:false,con:'Constellation III · Futura',emoji:'🌿',
+   title:'What I Want For Us',
+   body:'What I want is for us to be succesfull and rich ofccc not just in money but in happiness aswell.',
+   img:'image20.jpeg', ph:'🌿', x:.14,y:.62},
+  {type:'blue',size:2.6,pulse:false,con:'Constellation III · Futura',emoji:'⭐',
+   title:'The Life I Imagine',
+   body:'The life I imagine is waking up next to you and going on so many cute dates and thrilling adventures and travel around the world.',
+   img:'image21.jpeg', ph:'🏡', x:.20,y:.68},
+  {type:'blue',size:2.4,pulse:false,con:'Constellation III · Futura',emoji:'🌙',
+   title:'Growing Old With You',
+   body:'U areee the person I choose everyday of my lifee and I promise to grow old with you together.',
+   img:'image22.jpeg', ph:'🌙', x:.26,y:.62},
+
+  // ── CONSTELLATION ANIMA (PURPLE) — Diamond shape, bottom-right ──
+  {type:'purple',size:2.5,pulse:false,con:'Constellation IV · Anima',emoji:'💜',
+   title:'Your Strength',
+   body:'Ur abilityyy to neverrr giveee up ur determinationnn ur strength itsss all sooo attractivee to me.',
+   img:'image23.jpeg', ph:'💪', x:.62,y:.55},
+  {type:'purple',size:3.0,pulse:false,con:'Constellation IV · Anima',emoji:'🌟',
+   title:'What The World Sees',
+   body:'Ur ability tooo makeee evryone feel wanted and comforted despite being nottt veryyy socialll is incredible babyyy U should be prouddd of ur self.',
+   img:'image24.jpeg', ph:'🌟', x:.70,y:.48},
+  {type:'purple',size:4.0,pulse:true, con:'Constellation IV · Anima',emoji:'👑',
+   title:'Your Soul',
+   body:'Ur soul is so kind beautiful one that can makeme and anyone feel soooo calm and wanted',
+   img:'image25.jpeg', ph:'👑', x:.78,y:.44},
+  {type:'purple',size:3.0,pulse:false,con:'Constellation IV · Anima',emoji:'✨',
+   title:'Your Kindness',
+   body:'The wayyy thinkk everyone is good and never fail to showww kindness is one the mosttt beautiful thing about U.',
+   img:'image26.jpeg', ph:'🌺', x:.86,y:.48},
+  {type:'purple',size:2.5,pulse:false,con:'Constellation IV · Anima',emoji:'🔮',
+   title:'Your Mind',
+   body:'Ur mindddd is sooo strongggg and resilienttt one that never failsss to impresss me.',
+   img:'image27.jpeg', ph:'🔮', x:.90,y:.57},
+  {type:'purple',size:2.8,pulse:false,con:'Constellation IV · Anima',emoji:'🦋',
+   title:'Your Heart',
+   body:'U show whether U are sad or happy , U help even when U need it urself , ur heart is something Ill cherish forever.',
+   img:'image28.jpeg', ph:'💜', x:.86,y:.66},
+  {type:'purple',size:2.5,pulse:false,con:'Constellation IV · Anima',emoji:'🌺',
+   title:'Your Light',
+   body:'U glowww , U lighttt up the room. U are like a shot of espresso , so energetic sooo amazing so refreshing to be with.',
+   img:'image29.jpeg', ph:'☀️', x:.78,y:.70},
+  {type:'purple',size:2.8,pulse:false,con:'Constellation IV · Anima',emoji:'💫',
+   title:'Everything You Are',
+   body:'U areee everythinggg thats good in the world. Looking at U fills me with hope, U are the bravest strongest the most amazingggg person I know.',
+   img:'image30.jpeg', ph:'💫', x:.70,y:.66},
+
+  // ── BIRTHDAY STAR — Centre ──
+  {type:'green',size:6.5,pulse:true,con:'The Birthday Star',emoji:'🎂',
+   title:'Happy Birthday Bhavana',
+   body:'__BIRTHDAY__',
+   img:'', ph:'🎂', x:.50,y:.43},
+];
+
+const LINES = [
+  [0,1],[1,2],[2,3],[3,4],[4,6],[6,0],[0,5],[5,6],       
+  [7,8],[8,9],[9,10],[10,11],[11,12],[12,13],[13,7],[8,13], 
+  [15,16],[16,17],[17,18],[18,19],[19,20],[20,21],[21,15],[17,15], 
+  [22,23],[23,24],[24,25],[25,26],[26,27],[27,28],[28,22],[23,27], 
+];
+
+const COLS = {
+  gold:  {core:'#f0d080',glow:'rgba(240,208,128,'},
+  rose:  {core:'#e88fa0',glow:'rgba(232,143,160,'},
+  blue:  {core:'#80b8f0',glow:'rgba(128,184,240,'},
+  purple:{core:'#c090f0',glow:'rgba(192,144,240,'},
+  green: {core:'#90f0b0',glow:'rgba(144,240,176,'},
+};
+
+const sky=document.getElementById('sky');
+const ctx=sky.getContext('2d');
+let W,H,bgS=[],time=0,disc=new Set(),ttOpen=false;
+
+function resize(){
+  W=sky.width=window.innerWidth;H=sky.height=window.innerHeight;
+  bgS=[];
+  const n=Math.floor(W*H/1600);
+  for(let i=0;i<n;i++) bgS.push({
+    x:Math.random()*W,y:Math.random()*H,
+    r:.12+Math.random()*.8,op:.07+Math.random()*.55,
+    tw:Math.random()*Math.PI*2,ts:.004+Math.random()*.018
+  });
+}
+window.addEventListener('resize',resize);
+
+function gx(s){return s.x*W}
+function gy(s){return s.y*H}
+
+function drawNebula(){
+  [{x:.22,y:.35,rx:.28,ry:.22,c:'rgba(100,50,160,.07)'},
+   {x:.72,y:.22,rx:.25,ry:.18,c:'rgba(180,60,100,.06)'},
+   {x:.48,y:.68,rx:.32,ry:.2, c:'rgba(50,90,200,.055)'},
+   {x:.12,y:.65,rx:.2, ry:.16,c:'rgba(60,120,170,.045)'},
+   {x:.85,y:.58,rx:.18,ry:.14,c:'rgba(140,60,200,.05)'}
+  ].forEach(n=>{
+    const mx=Math.max(n.rx,n.ry)*W,my=Math.max(n.rx,n.ry)*H;
+    const g=ctx.createRadialGradient(n.x*W,n.y*H,0,n.x*W,n.y*H,Math.max(mx,my));
+    g.addColorStop(0,n.c);g.addColorStop(1,'transparent');
+    ctx.save();
+    ctx.scale(n.rx*W/Math.max(mx,my),n.ry*H/Math.max(mx,my));
+    ctx.fillStyle=g;ctx.beginPath();
+    ctx.arc(n.x*W*(Math.max(mx,my)/(n.rx*W)),n.y*H*(Math.max(mx,my)/(n.ry*H)),Math.max(mx,my),0,Math.PI*2);
+    ctx.fill();ctx.restore();
+  });
+}
+
+function drawLines(){
+  LINES.forEach(([a,b])=>{
+    const both=disc.has(a)&&disc.has(b);
+    ctx.beginPath();ctx.moveTo(gx(STARS[a]),gy(STARS[a]));ctx.lineTo(gx(STARS[b]),gy(STARS[b]));
+    ctx.strokeStyle=both?'rgba(255,255,255,.17)':'rgba(255,255,255,.033)';
+    ctx.lineWidth=both?.8:.32;
+    ctx.setLineDash(both?[]:[2,9]);ctx.stroke();ctx.setLineDash([]);
+  });
+}
+
+function drawStar(s,i){
+  const x=gx(s),y=gy(s),c=COLS[s.type];
+  const pf=s.pulse?1+.22*Math.sin(time*.038+i):1;
+  const sz=s.size*pf,d=disc.has(i);
+  const g=ctx.createRadialGradient(x,y,0,x,y,sz*9*pf);
+  g.addColorStop(0,c.glow+(d?.62:.3)+')');
+  g.addColorStop(.5,c.glow+(d?.14:.06)+')');
+  g.addColorStop(1,'transparent');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,sz*9*pf,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=c.core;ctx.beginPath();ctx.arc(x,y,sz*(d?1.45:1),0,Math.PI*2);ctx.fill();
+  if(d){
+    ctx.strokeStyle=c.core;ctx.lineWidth=.65;
+    for(let r=0;r<4;r++){
+      const ang=r*Math.PI/2+time*.012;
+      ctx.globalAlpha=.3+.18*Math.sin(time*.05+i);
+      ctx.beginPath();ctx.moveTo(x+Math.cos(ang)*sz*1.8,y+Math.sin(ang)*sz*1.8);
+      ctx.lineTo(x+Math.cos(ang)*sz*5,y+Math.sin(ang)*sz*5);ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+  }
+  if(s.type==='green'){
+    ctx.strokeStyle=`rgba(144,240,176,${.2+.1*Math.sin(time*.04)})`;
+    ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,sz*6*pf,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle=`rgba(144,240,176,${.09+.06*Math.sin(time*.03+1)})`;
+    ctx.lineWidth=.5;ctx.beginPath();ctx.arc(x,y,sz*10.5*pf,0,Math.PI*2);ctx.stroke();
+  }
+}
+
+let shoots=[],sCool=0;
+function spawnShoot(){
+  shoots.push({
+    x:Math.random()*W*.3,y:Math.random()*H*.4,
+    vx:7+Math.random()*8,vy:2+Math.random()*4,
+    life:1,len:5+Math.random()*4
+  });
+}
+function drawShoots(){
+  shoots=shoots.filter(s=>s.x<W+100);
+  shoots.forEach(s=>{
+    s.x+=s.vx;s.y+=s.vy;
+    const op=Math.min(1,Math.min(s.x/80,(W-s.x)/80));
+    ctx.strokeStyle=`rgba(255,255,210,${op*.8})`;
+    ctx.lineWidth=1.5;ctx.beginPath();
+    ctx.moveTo(s.x,s.y);ctx.lineTo(s.x-s.vx*s.len,s.y-s.vy*s.len);ctx.stroke();
+    ctx.fillStyle=`rgba(255,255,220,${op*.9})`;
+    ctx.beginPath();ctx.arc(s.x,s.y,2,0,Math.PI*2);ctx.fill();
+  });
+}
+
+function loop(){
+  ctx.clearRect(0,0,W,H);
+  const bg=ctx.createRadialGradient(W*.5,H*.4,0,W*.5,H*.5,Math.max(W,H));
+  bg.addColorStop(0,'#040d1e');bg.addColorStop(.5,'#020a18');bg.addColorStop(1,'#010610');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  drawNebula();
+  bgS.forEach(s=>{
+    s.tw+=s.ts;
+    const o=s.op*.6+.4*Math.abs(Math.sin(s.tw));
+    ctx.fillStyle=`rgba(248,244,255,${o})`;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+  });
+  drawLines();
+  STARS.forEach((s,i)=>drawStar(s,i));
+  drawShoots();
+  sCool++;if(sCool>200){sCool=0;spawnShoot();}
+  time++;requestAnimationFrame(loop);
+}
+
+sky.addEventListener('click',e=>{
+  if(ttOpen) return;
+  let best=null,bd=Infinity;
+  STARS.forEach((s,i)=>{
+    const d=Math.hypot(e.clientX-gx(s),e.clientY-gy(s));
+    if(d<Math.max(34,s.size*14)&&d<bd){best=i;bd=d;}
+  });
+  if(best!==null) openStar(best,e.clientX,e.clientY);
+});
+
+sky.addEventListener('mousemove',e=>{
+  let hover=false;
+  STARS.forEach(s=>{if(Math.hypot(e.clientX-gx(s),e.clientY-gy(s))<Math.max(32,s.size*14)) hover=true;});
+  sky.style.cursor=hover?'pointer':'crosshair';
+});
+
+sky.addEventListener('touchstart',e=>{
+  if(ttOpen) return;
+  const t=e.touches[0];let best=null,bd=Infinity;
+  STARS.forEach((s,i)=>{const d=Math.hypot(t.clientX-gx(s),t.clientY-gy(s));if(d<Math.max(44,s.size*16)&&d<bd){best=i;bd=d;}});
+  if(best!==null) openStar(best,t.clientX,t.clientY);
+},{passive:true});
+
+// Bonus UI detail: Tapping anywhere outside the tooltip automatically closes it!
+document.getElementById('tt-wrapper').addEventListener('click', e => {
+  if (e.target.id === 'tt-wrapper') cTT();
+});
+
+function openStar(idx,cx,cy){
+  const s=STARS[idx];
+  if(s.body==='__BIRTHDAY__'){showBday();return;}
+  disc.add(idx);
+  document.getElementById('dn').textContent=disc.size;
+  document.getElementById('hint').style.opacity='0';
+
+  const c=COLS[s.type];
+  document.getElementById('ttc').style.color=c.core;
+  document.getElementById('ttc').textContent=s.con;
+  document.getElementById('tte').textContent=s.emoji;
+  document.getElementById('ttt').textContent=s.title;
+  document.getElementById('ttb').textContent=s.body;
+
+  const img=document.getElementById('tt-img');
+  const ph=document.getElementById('tt-ph');
+  const phEmoji=document.getElementById('tt-ph-emoji');
+  if(s.img){
+    img.src=s.img;
+    img.classList.remove('loaded');
+    img.onload=()=>{img.classList.add('loaded');ph.style.display='none';};
+    img.onerror=()=>{img.classList.remove('loaded');ph.style.display='flex';};
+    ph.style.display='none';
+  } else {
+    img.src='';img.classList.remove('loaded');
+    phEmoji.textContent=s.ph||'📸';
+    ph.style.display='flex';
+  }
+
+  const tt=document.getElementById('tt');
+  let tx = cx + 24;
+  let ty = cy - 24;
+  
+  if (tx + 340 > window.innerWidth) tx = cx - 360;
+  if (tx < 10) tx = 10;
+  if (ty < 10) ty = 10;
+  
+  tt.style.left = tx + 'px';
+  tt.style.top = ty + 'px';
+  
+  // Activate the scrollable overlay
+  document.getElementById('tt-wrapper').classList.add('show');
+  ttOpen = true;
+
+  updateConNames();
+  burst(10,cx,cy,c.core);
+}
+
+function cTT(){
+  const w = document.getElementById('tt-wrapper');
+  w.classList.remove('show');
+  ttOpen = false;
+  // Gently snap the overlay back to the top when hidden
+  setTimeout(() => w.scrollTo(0, 0), 400); 
+}
+
+function updateConNames(){
+  [{range:[0,6],el:'cn1',anc:STARS[2]},
+   {range:[7,14],el:'cn2',anc:STARS[9]},
+   {range:[15,21],el:'cn3',anc:STARS[17]},
+   {range:[22,29],el:'cn4',anc:STARS[24]}
+  ].forEach(g=>{
+    const found=Array.from({length:g.range[1]-g.range[0]+1},(_,k)=>k+g.range[0]).some(i=>disc.has(i));
+    const el=document.getElementById(g.el);
+    if(found&&el){
+      el.style.left=(g.anc.x*W-70)+'px';
+      el.style.top=(g.anc.y*H-34)+'px';
+      el.classList.add('show');
+    }
+  });
+}
+
+// FLOATING LETTER
+let lfShown=false;
+function showLetter(){
+  if(lfShown) return;lfShown=true;
+  const el=document.getElementById('lf');
+  el.style.display='block';
+  el.style.left=Math.random()*50+20+'%';
+  el.style.top=Math.random()*35+25+'%';
+  el.style.animationDuration=(9+Math.random()*5)+'s';
+  el.onclick=()=>{el.style.display='none';openLetter();};
+  setTimeout(()=>{if(el.style.display!=='none'){el.style.display='none';lfShown=false;}},14000);
+}
+function openLetter(){
+  document.getElementById('lptag').textContent='A Sealed Letter, Caught';
+  document.getElementById('lptit').innerHTML='My dearest<br><em>Bhavana,</em>';
+  document.getElementById('lpbody').innerHTML='Replace this with your real letter to her. The one you kept deleting and starting over because nothing felt good enough.<br><br>Be specific — tell her the exact moment, the exact feeling, the tiny detail only she would recognise. That is the letter she keeps forever.<br><br>I love you.<br><br>— Ushnish';
+  document.getElementById('lp').classList.add('show');
+}
+setTimeout(showLetter,12000);
+
+function cP(id){document.getElementById(id).classList.remove('show');}
+
+// BIRTHDAY
+function showBday(){
+  disc.add(STARS.length-1);
+  document.getElementById('dn').textContent=disc.size;
+  document.getElementById('bp').classList.add('show');
+  burst(140,W/2,H/2,null);
+}
+function cBday(){document.getElementById('bp').classList.remove('show');}
+
+function burst(n,cx,cy,col){
+  const cols=['#f0d080','#e88fa0','#80b8f0','#c090f0','#90f0b0','#ffffff'];
+  for(let i=0;i<n;i++) setTimeout(()=>{
+    const el=document.createElement('div');el.className='pt';
+    const c=col||cols[Math.floor(Math.random()*cols.length)];
+    const ox=cx?(-80+Math.random()*160):Math.random()*innerWidth;
+    const oy=cy?(-80+Math.random()*160):Math.random()*innerHeight;
+    el.style.cssText=`left:${cx?cx+ox:ox}px;top:${cy?cy+oy:oy}px;width:${3+Math.random()*5}px;height:${3+Math.random()*5}px;background:${c};box-shadow:0 0 6px ${c};animation-duration:${1.2+Math.random()*2}s`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),3200);
+  },i*18);
+}
+
+// MORSE
+const MC={'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....','I':'..','J':'.---','K':'-.-','L':'.-..','M':'--','N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-','U':'..-','V':'...-','W':'.--','X':'-..-','Y':'-.--','Z':'--..','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.','0':'-----',' ':' '};
+const MSGS=['I LOVE YOU BHAVANA','HAPPY BIRTHDAY','YOU ARE MY UNIVERSE','MY FAVOURITE PERSON'];
+let mRun=false,mIdx=0;
+function showMorse(){
+  if(mRun) return;mRun=true;
+  const msg=MSGS[mIdx%MSGS.length];mIdx++;
+  const enc=msg.split('').map(c=>MC[c]||'').join(' ');
+  const m=document.getElementById('morse');
+  document.getElementById('md').textContent='';
+  document.getElementById('mk').textContent='';
+  m.classList.add('show');
+  let i=0;
+  const iv=setInterval(()=>{
+    if(i<enc.length){document.getElementById('md').textContent+=enc[i];i++;}
+    else{
+      clearInterval(iv);
+      document.getElementById('mk').textContent='"'+msg+'"';
+      setTimeout(()=>{m.classList.remove('show');mRun=false;},3500);
+    }
+  },55);
+}
+setInterval(showMorse,42000);
+setTimeout(showMorse,16000);
+
+// MUSIC
+const aud=document.getElementById('audio');
+let playing=false;
+function toggleMusic(){
+  if(playing){aud.pause();document.getElementById('mb').textContent='♪ Play Music';}
+  else{aud.play().catch(()=>{});document.getElementById('mb').textContent='♪ Pause';}
+  playing=!playing;
+}
+
+// INTRO
+function enterUniverse(){
+  document.getElementById('intro').classList.add('gone');
+  setTimeout(()=>{document.getElementById('intro').style.display='none';document.getElementById('hud').classList.add('show');},1600);
+}
+
+// INIT
+const sty=document.createElement('style');
+sty.textContent='@keyframes pf{0%{opacity:1;transform:translateY(0) scale(1) rotate(0deg)}100%{opacity:0;transform:translateY(-90px) scale(0) rotate(360deg)}}.pt{animation:pf linear forwards}';
+document.head.appendChild(sty);
+resize();loop();
+</script>
+</body>
+</html>
