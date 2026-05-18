@@ -14,7 +14,7 @@
 }
 
 /* Base layer locked perfectly in place */
-html,body{width:100%;height:100%;overflow:hidden;background:var(--space);color:var(--white)}
+html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:var(--space);color:var(--white)}
 canvas{position:fixed;inset:0;z-index:0;cursor:crosshair}
 
 /* ── INTRO ── */
@@ -48,16 +48,17 @@ canvas{position:fixed;inset:0;z-index:0;cursor:crosshair}
 @keyframes br{0%,100%{opacity:.28}50%{opacity:.5}}
 
 /* ── TOOLTIP OVERLAY (THE SCROLL FIX) ── */
-/* This invisible layer handles the webpage scrolling natively */
 #tt-wrapper { position:fixed; inset:0; z-index:400; overflow-y:auto; overflow-x:hidden; pointer-events:none; opacity:0; transition:opacity .38s; }
 #tt-wrapper.show { pointer-events:all; opacity:1; }
 
-#tt{position:absolute;background:rgba(2,8,20,.96);border:1px solid rgba(255,255,255,.11);border-radius:20px;padding:0;max-width:320px;width:90%;transform:translateY(10px) scale(.97);transition:transform .38s;backdrop-filter:blur(24px);overflow:hidden; margin-bottom: 4rem; /* Gives breathing room when fully scrolled down */}
+#tt{position:absolute;background:rgba(2,8,20,.96);border:1px solid rgba(255,255,255,.11);border-radius:20px;padding:0;max-width:320px;width:90%;transform:translateY(10px) scale(.97);transition:transform .38s;backdrop-filter:blur(24px);overflow:hidden; margin-bottom: 4rem;}
 #tt-wrapper.show #tt { transform:none; }
 
-.tt-img{width:100%;height:160px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.4rem;border-bottom:1px solid rgba(255,255,255,.07);position:relative;overflow:hidden}
-.tt-img img{width:100%;height:100%;object-fit:cover;display:none}
+/* The Image Fix: natural scaling, no cropping */
+.tt-img{width:100%;height:auto;min-height:160px;background:rgba(2,8,20,.96);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.4rem;border-bottom:1px solid rgba(255,255,255,.07);position:relative;overflow:hidden}
+.tt-img img{width:100%;height:auto;max-height:280px;object-fit:contain;display:none}
 .tt-img img.loaded{display:block}
+
 .tt-img-ph{display:flex;flex-direction:column;align-items:center;gap:.5rem}
 .tt-img-ph span{font-size:2rem;opacity:.35}
 .tt-img-ph p{font-family:var(--fm);font-size:.42rem;letter-spacing:.18em;text-transform:uppercase;opacity:.28;color:var(--white)}
@@ -108,12 +109,23 @@ canvas{position:fixed;inset:0;z-index:0;cursor:crosshair}
 /* ── PARTICLES ── */
 .pt{position:fixed;pointer-events:none;z-index:500;border-radius:50%;animation:pf linear forwards}
 @keyframes pf{0%{opacity:1;transform:translateY(0) scale(1) rotate(0deg)}100%{opacity:0;transform:translateY(-90px) scale(0) rotate(360deg)}}
+
+/* ── MOBILE FALLBACK ── */
+@media (max-width: 600px) {
+  #tt {
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -45%) scale(0.95) !important;
+  }
+  #tt-wrapper.show #tt { transform: translate(-50%, -50%) scale(1) !important; }
+  .i-name { font-size: clamp(3rem, 15vw, 9rem); }
+}
 </style>
 </head>
 <body>
 
 <canvas id="sky"></canvas>
-<audio id="audio" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg"></audio>
+<audio id="audio" loop><source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-piano-112135.mp3" type="audio/mpeg"></audio>
 
 <div id="intro">
   <div class="i-name">Bha<em>vana</em></div>
